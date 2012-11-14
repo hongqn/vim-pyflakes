@@ -1,0 +1,3 @@
+[submodule "pylibs/pyflakes"]
+	path = pylibs/pyflakes
+	url = https://github.com/pyflakes/pyflakes.git
