@@ -47,10 +47,12 @@ if has_signs:
     vim.command('sign unplace *')
 
 if errors:
-    vim.command('copen')
+    vim.command('copen %d' % max(min(len(errors), 6), 3))
     if has_signs:
         for error in errors:
             vim.command('sign place 1 line={lnum} name={type} buffer={bufnr}'.format(**error))
+    vim.command('call s:info("Code checking is completed. %d error%s found.")' % (
+        len(errors), '' if len(errors) == 1 else 's'))
 else:
     vim.command('cclose')
     vim.command('call s:info("Code checking is completed. No errors found.")')
