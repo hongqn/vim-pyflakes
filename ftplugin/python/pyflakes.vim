@@ -15,20 +15,30 @@ from operator import attrgetter
 
 buffer = vim.current.buffer
 filename = buffer.name
-
-codeString = file(filename, 'U').read() + '\n'
 errors = []
-tree = compile(codeString, filename, "exec", _ast.PyCF_ONLY_AST)
-w = checker.Checker(tree, filename)
-for w in sorted(w.messages, key=attrgetter('lineno')):
-    errors.append(dict(
-        lnum=w.lineno,
-        col=w.col,
-        text=str(w.message % w.message_args),
-        type='pyflakes',
-        filename=filename,
-        bufnr=buffer.number,
-    ))
+
+def check(filename):
+    try:
+        codeString = file(filename, 'U').read() + '\n'
+        tree = compile(codeString, filename, "exec", _ast.PyCF_ONLY_AST)
+        w = checker.Checker(tree, filename)
+        for w in sorted(w.messages, key=attrgetter('lineno')):
+            yield dict(
+                lnum=w.lineno,
+                col=w.col,
+                text=str(w.message % w.message_args),
+            )
+
+    except SyntaxError, e:
+        yield dict(
+                lnum=e.lineno,
+                col=e.offset or 0,
+                text=e.args[0],
+            )
+
+for e in check(filename):
+    e.update(dict(filename=filename, bufnr=buffer.number, type='pyflakes'))
+    errors.append(e)
 
 vim.command("call setqflist(%r, 'r')" % errors)
 
