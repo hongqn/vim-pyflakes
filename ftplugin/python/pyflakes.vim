@@ -25,7 +25,7 @@ def check(filename):
         for w in sorted(w.messages, key=attrgetter('lineno')):
             yield dict(
                 lnum=w.lineno,
-                col=w.col,
+                col=w.col or 0,
                 text=str(w.message % w.message_args),
             )
 
