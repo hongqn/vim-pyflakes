@@ -20,9 +20,13 @@ errors = []
 def check(filename):
     try:
         codeString = file(filename, 'U').read() + '\n'
+        codelines = codeString.splitlines()
         tree = compile(codeString, filename, "exec", _ast.PyCF_ONLY_AST)
         w = checker.Checker(tree, filename)
         for w in sorted(w.messages, key=attrgetter('lineno')):
+            codeline = codelines[w.lineno-1]
+            if 'pyflakes: ignore %s' % w.__class__.__name__ in codeline:
+                continue
             yield dict(
                 lnum=w.lineno,
                 col=w.col or 0,
